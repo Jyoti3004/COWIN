@@ -1,0 +1,16 @@
+# Local simulation of the multi-AZ setup (no cloud account needed).
+#   docker compose up --build
+#   curl http://localhost:8000/health          (repeat: zone alternates)
+#   docker compose stop zone-a                 (chaos test: app stays up via zone-b)
+services:
+  zone-a:
+    build: ../../member1-app-and-architecture/app
+    environment: { ZONE: ap-south-1a, PORT: "8080" }
+  zone-b:
+    build: ../../member1-app-and-architecture/app
+    environment: { ZONE: ap-south-1b, PORT: "8080" }
+  lb:
+    image: nginx:1.27-alpine
+    ports: ["8000:80"]
+    volumes: ["./nginx.conf:/etc/nginx/nginx.conf:ro"]
+    depends_on: [zone-a, zone-b]
